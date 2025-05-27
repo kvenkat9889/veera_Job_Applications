@@ -6,14 +6,14 @@ const path = require('path');
 const fs = require('fs').promises;
 
 const app = express();
-const port = 3000;
+const port = 3024;
 
 // PostgreSQL configuration
 const pool = new Pool({
     user: 'postgres',
-    host: 'localhost',
+    host: 'postgres',
     database: 'job_applications',
-    password: 'Veera@0134',
+    password: 'admin123',
     port: 5432,
 });
 
@@ -91,7 +91,7 @@ app.post('/api/applications', upload.fields([
         };
 
         // Handle file uploads with full URL
-        const baseUrl = `http://localhost:${port}/uploads/`;
+        const baseUrl = `http://98.80.67.100:${port}/uploads/`;
         if (files.resume) {
             formData.documents.resume = {
                 name: files.resume[0].originalname,
@@ -218,5 +218,5 @@ app.patch('/api/applications/:id', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server running on http://98.80.67.100:${port}`);
 });

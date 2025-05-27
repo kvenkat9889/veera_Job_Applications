@@ -708,7 +708,7 @@
                     </tr>`;
                 clearError();
 
-                const url = new URL('http://localhost:3000/api/applications');
+                const url = new URL('http://98.80.67.100:3024/api/applications');
                 if (searchTerm) url.searchParams.append('search', searchTerm);
                 url.searchParams.append('page', page);
                 url.searchParams.append('limit', limit);
@@ -755,7 +755,7 @@
                 if (error.name === 'AbortError') {
                     userMessage += 'Request timed out. Please check your network connection.';
                 } else if (error.message.includes('Failed to fetch')) {
-                    userMessage += 'Ensure the backend server is running at http://localhost:3000.';
+                    userMessage += 'Ensure the backend server is running at http://98.80.67.100:3024.';
                 } else {
                     userMessage += 'Verify the database connection and API response format.';
                 }
@@ -860,7 +860,7 @@
 
             const fileName = file.name || 'Unnamed file';
             const mimeType = fileName.endsWith('.pdf') ? 'application/pdf' : `image/${fileName.split('.').pop().toLowerCase()}`;
-            const fileUrl = file.path.startsWith('http') ? file.path : `http://localhost:3000/${file.path}`;
+            const fileUrl = file.path.startsWith('http') ? file.path : `http://98.80.67.100:3024/${file.path}`;
             let previewHtml = '';
 
             if (mimeType.startsWith('image/')) {
@@ -1035,7 +1035,7 @@
 
         async function updateStatus(id, status) {
             try {
-                const response = await fetch(`http://localhost:3000/api/applications/${id}`, {
+                const response = await fetch(`http://98.80.67.100:3024/api/applications/${id}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status })
