@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Application Form</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -105,7 +106,7 @@
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 2fr));
             gap: 20px;
         }
 
@@ -495,7 +496,7 @@
         </div>
         <div class="form-group">
           <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
-          <input type="tel" id="phone" class="form-control" pattern="[0-9]{10}" title="Enter a valid 10-digit phone number." placeholder="1234567890" maxlength="10" required>
+          <input type="tel" id="phone" class="form-control" pattern="[0-9]{10}" title="Enter a valid 10-digit phone number." placeholder="8676756444" maxlength="10" required>
           <small id="phoneError" class="error">
             <i class="fas fa-exclamation-circle"></i> Please enter a valid 10-digit phone number.
           </small>
@@ -533,18 +534,20 @@
         </div>
         <div class="form-group">
           <label for="street"><i class="fas fa-map-marker-alt"></i> Address</label>
-          <input type="text" id="street" class="form-control" placeholder="123 Main St" required>
-          <small id="streetError" class="error">
+<input type="text" id="street" class="form-control" placeholder="123 Main St" 
+       maxlength="200" required>          <small id="streetError" class="error">
             <i class="fas fa-exclamation-circle"></i> Please enter your street address.
           </small>
         </div>
-        <div class="form-group">
-          <label for="zipcode"><i class="fas fa-mail-bulk"></i> Postal/ZIP Code</label>
-          <input type="text" id="zipcode" class="form-control" pattern="[0-9]{6}" title="Enter a 5-6 digit postal code." placeholder="560001" maxlength="6" required>
-          <small id="zipcodeError" class="error">
-            <i class="fas fa-exclamation-circle"></i> Please enter a valid 5-6 digit postal code.
-          </small>
-        </div>
+<div class="form-group">
+  <label for="zipcode"><i class="fas fa-mail-bulk"></i> Postal/ZIP Code</label>
+  <input type="text" id="zipcode" class="form-control" pattern="[1-9][0-9]{5}" 
+         title="Enter a valid 6-digit postal code that doesn't start with zero (e.g., 560001)." 
+         placeholder="560001" maxlength="6" required>
+  <small id="zipcodeError" class="error">
+    <i class="fas fa-exclamation-circle"></i> Please enter a valid 6-digit postal code that doesn't start with zero.
+  </small>
+</div>
       </div>
     </fieldset>
 
@@ -876,31 +879,32 @@ hasWorkExperienceCheckbox.addEventListener("change", function() {
     const streetError = document.getElementById("streetError");
     validateField(street, streetError, null, true);
 
-    const zipcode = document.getElementById("zipcode");
-    const zipcodeError = document.getElementById("zipcodeError");
-    const zipcodePattern = /^[0-9]{6}$/;
-    validateField(zipcode, zipcodeError, zipcodePattern);
+     isValid = validateZipCode(isSubmit) && isValid;
+
 
     return isValid;
   }
 
-  function validatePhone(isSubmit = false) {
-    const phone = document.getElementById("phone");
-    const phoneError = document.getElementById("phoneError");
-    const isTouched = phone.hasAttribute('data-touched') || isSubmit;
-    const cleanedPhone = phone.value.replace(/[\s-]/g, '');
-    const phonePattern = /^[6789][0-9]{9}$/;
-    
-    if (!cleanedPhone || !phonePattern.test(cleanedPhone)) {
-      phoneError.style.display = isTouched ? "block" : "none";
-      phoneError.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9.`;
-      return !isTouched;
-    } else {
-      phoneError.style.display = "none";
-      phone.value = cleanedPhone; // Update input with cleaned value
-      return true;
-    }
+function validatePhone(isSubmit = false) {
+  const phone = document.getElementById("phone");
+  const phoneError = document.getElementById("phoneError");
+  const isTouched = phone.hasAttribute('data-touched') || isSubmit;
+  const cleanedPhone = phone.value.replace(/[\s-]/g, '');
+  const phonePattern = /^[6789][0-9]{9}$/;
+  
+  // Check for repetitive digits
+  const isRepetitive = /^(\d)\1{9}$/.test(cleanedPhone);
+  
+  if (!cleanedPhone || !phonePattern.test(cleanedPhone) || isRepetitive) {
+    phoneError.style.display = isTouched ? "block" : "none";
+    phoneError.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please enter a valid 10-digit phone number starting with 6, 7, 8, or 9 (no repetitive digits).`;
+    return !isTouched;
+  } else {
+    phoneError.style.display = "none";
+    phone.value = cleanedPhone;
+    return true;
   }
+}
 
   function validateSSCDocs(isSubmit = false) {
     const sscDocs = document.getElementById("sscDocs");
@@ -1005,7 +1009,7 @@ function validateTextField(fieldId, errorId, minLength, errorMessage, isSubmit =
   const field = document.getElementById(fieldId);
   const error = document.getElementById(errorId);
   const isTouched = field.hasAttribute("data-touched") || isSubmit;
-  const alphabetPattern = /^[A-Za-z ]+$/;
+  const alphabetPattern = /^[A-Za-z0-9\s\-.,&()]+$/; // Allow common business name characters
 
   if (!field.value) {
     error.textContent = "This field is required.";
@@ -1016,12 +1020,35 @@ function validateTextField(fieldId, errorId, minLength, errorMessage, isSubmit =
     error.style.display = isTouched ? "block" : "none";
     return !isTouched;
   } else if (!alphabetPattern.test(field.value)) {
-    error.textContent = "Only letters and spaces are allowed.";
+    error.textContent = "Contains invalid characters.";
     error.style.display = isTouched ? "block" : "none";
     return !isTouched;
   }
   error.style.display = "none";
   return true;
+}
+
+// Update minLength to 3 for both fields
+function validateCompany(isSubmit = false) {
+  if (!hasWorkExperienceCheckbox.checked) return true;
+  return validateTextField(
+    "company",
+    "companyError",
+    3, // Changed from 2 to 3
+    "Company name must be at least 3 characters long.",
+    isSubmit
+  );
+}
+
+function validateRole(isSubmit = false) {
+  if (!hasWorkExperienceCheckbox.checked) return true;
+  return validateTextField(
+    "role",
+    "roleError",
+    3, // Changed from 2 to 3
+    "Job title must be at least 3 characters long.",
+    isSubmit
+  );
 }
 
 function validateCompany(isSubmit = false) {
@@ -1047,7 +1074,44 @@ function validateRole(isSubmit = false) {
   );
 }
 
-// Validate Dates
+function validateZipCode(isSubmit = false) {
+    const zipcode = document.getElementById("zipcode");
+    const zipcodeError = document.getElementById("zipcodeError");
+    const isTouched = zipcode.hasAttribute('data-touched') || isSubmit;
+    
+    // Sanitize input: keep only digits and limit to 6 characters
+    zipcode.value = zipcode.value.replace(/[^0-9]/g, '').slice(0, 6);
+    
+    let errorMessage = "";
+    
+    // Check for all zeros
+    if (/^0+$/.test(zipcode.value)) {
+        errorMessage = "Postal code cannot be all zeros.";
+    } 
+    // Check if it starts with zero
+    else if (/^0/.test(zipcode.value)) {
+        errorMessage = "Postal code cannot start with zero.";
+    }
+    else if (!zipcode.value) {
+        errorMessage = "Please enter a 6-digit postal code.";
+    } 
+    else if (zipcode.value.length !== 6) {
+        errorMessage = "Postal code must be exactly 6 digits.";
+    } 
+    else if (!/^[1-9][0-9]{5}$/.test(zipcode.value)) {
+        errorMessage = "Postal code must be a valid 6-digit number.";
+    }
+
+    if (errorMessage) {
+        zipcodeError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${errorMessage}`;
+        zipcodeError.style.display = isTouched ? "block" : "none";
+        return !isTouched; // Return true if not touched and has error
+    } else {
+        zipcodeError.style.display = "none";
+        return true;
+    }
+}
+
 function validateDates(isSubmit = false) {
   if (!hasWorkExperienceCheckbox.checked) return true;
 
@@ -1057,18 +1121,20 @@ function validateDates(isSubmit = false) {
   const endDateError = document.getElementById("endDateError");
   const isTouched = startDate.hasAttribute("data-touched") || endDate.hasAttribute("data-touched") || isSubmit;
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize to start of day
+  today.setHours(0, 0, 0, 0);
+  const minDate = new Date("1970-01-01"); // Set minimum reasonable date
+
   let isValid = true;
 
-  // Check if start date is provided and valid
+  // Validate start date
   if (!startDate.value) {
     startDateError.textContent = "Please provide a start date.";
     startDateError.style.display = isTouched ? "block" : "none";
     isValid = false;
   } else {
     const start = new Date(startDate.value);
-    if (start > today) {
-      startDateError.textContent = "Start date cannot be in the future.";
+    if (start < minDate || start > today) {
+      startDateError.textContent = "Start date must be between 1970 and today.";
       startDateError.style.display = isTouched ? "block" : "none";
       isValid = false;
     } else {
@@ -1076,7 +1142,7 @@ function validateDates(isSubmit = false) {
     }
   }
 
-  // Check if end date is provided and valid
+  // Validate end date
   if (!endDate.value) {
     endDateError.textContent = "Please provide an end date.";
     endDateError.style.display = isTouched ? "block" : "none";
@@ -1084,8 +1150,9 @@ function validateDates(isSubmit = false) {
   } else {
     const end = new Date(endDate.value);
     const start = startDate.value ? new Date(startDate.value) : null;
-    if (end > today) {
-      endDateError.textContent = "End date cannot be in the future.";
+    
+    if (end < minDate || end > today) {
+      endDateError.textContent = "End date must be between 1970 and today.";
       endDateError.style.display = isTouched ? "block" : "none";
       isValid = false;
     } else if (start && end < start) {
@@ -1099,7 +1166,22 @@ function validateDates(isSubmit = false) {
 
   return isValid || !isTouched;
 }
-
+function validateEmail(isSubmit = false) {
+  const email = document.getElementById("email");
+  const emailError = document.getElementById("emailError");
+  const isTouched = email.hasAttribute('data-touched') || isSubmit;
+  // More strict email pattern
+  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  
+  if (!email.value || !emailPattern.test(email.value)) {
+    emailError.style.display = isTouched ? "block" : "none";
+    emailError.innerHTML = `<i class="fas fa-exclamation-circle"></i> Please enter a valid email address (e.g., user@example.com).`;
+    return !isTouched;
+  } else {
+    emailError.style.display = "none";
+    return true;
+  }
+}
 // Validate Employment Type
 function validateEmploymentType(isSubmit = false) {
   if (!hasWorkExperienceCheckbox.checked) return true;
@@ -1124,6 +1206,7 @@ function validateResponsibilities(isSubmit = false) {
   const responsibilities = document.getElementById("responsibilities");
   const responsibilitiesError = document.getElementById("responsibilitiesError");
   const isTouched = responsibilities.hasAttribute("data-touched") || isSubmit;
+  const responsibilityPattern = /^[A-Za-z0-9\s\-.,;:!?'"()@#$%&*+/=]+$/; // Allow common punctuation
 
   if (!responsibilities.value || responsibilities.value.length < 10) {
     responsibilitiesError.textContent = "Responsibilities must be at least 10 characters.";
@@ -1131,6 +1214,10 @@ function validateResponsibilities(isSubmit = false) {
     return !isTouched;
   } else if (responsibilities.value.length > 500) {
     responsibilitiesError.textContent = "Responsibilities cannot exceed 500 characters.";
+    responsibilitiesError.style.display = isTouched ? "block" : "none";
+    return !isTouched;
+  } else if (!responsibilityPattern.test(responsibilities.value)) {
+    responsibilitiesError.textContent = "Contains invalid special characters.";
     responsibilitiesError.style.display = isTouched ? "block" : "none";
     return !isTouched;
   }
@@ -1525,12 +1612,23 @@ function validateWorkExperience(isSubmit = false) {
     if (!validateWorkExperience(true)) errors.push("Work Experience");
     if (!validateDocumentation(true)) errors.push("Final Documentation");
 
-    if (errors.length > 0) {
-      alert(`Please complete the following sections correctly before submitting: ${errors.join(", ")}.`);
-      editForm();
-      return;
-    }
-
+  if (errors.length > 0) {
+    alert(`Please complete the following sections correctly before submitting: ${errors.join(", ")}.`);
+    editForm();
+    return;
+  }
+  // Show confirmation dialog
+  const isConfirmed = await Swal.fire({
+    title: 'Confirm Submission',
+    text: 'Are you sure you want to submit this application?',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, submit it!',
+    cancelButtonText: 'No, review again'
+  });
+    if (!isConfirmed.isConfirmed) {
+    return; // User clicked cancel
+  }
     const formData = new FormData();
     formData.append('personalInfo', JSON.stringify({
       name: document.getElementById("name").value,
@@ -1592,7 +1690,7 @@ function validateWorkExperience(isSubmit = false) {
     }
 
    try {
-    const response = await fetch('http://98.80.67.100:3024/api/applications', {
+    const response = await fetch('http://44.223.23.145:3644/api/applications', {
       method: 'POST',
       body: formData
     });
@@ -1616,7 +1714,7 @@ function validateWorkExperience(isSubmit = false) {
         </div>
       `;
 
-      // Add event listener to the button to avoid inline onclick
+
       document.getElementById("submitAnother").addEventListener("click", () => {
         form.reset(); // Reset form fields
         currentStep = 0; // Reset to first step

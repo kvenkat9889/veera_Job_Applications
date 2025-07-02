@@ -1,15 +1,26 @@
-CREATE TABLE IF NOT EXISTS applications (
+CREATE TABLE applications (
     id SERIAL PRIMARY KEY,
     personal_info JSONB NOT NULL,
     education JSONB NOT NULL,
     work_experience JSONB NOT NULL,
     documents JSONB NOT NULL,
-    date TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(20) NOT NULL DEFAULT 'Pending'
+    date TIMESTAMP NOT NULL,
+    status VARCHAR(50) NOT NULL
 );
 
-
-CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
-CREATE INDEX IF NOT EXISTS idx_applications_name ON applications((personal_info->>'name'));
-CREATE INDEX IF NOT EXISTS idx_applications_email ON applications((personal_info->>'email'));
-CREATE INDEX IF NOT EXISTS idx_applications_phone ON applications((personal_info->>'phone'));
+CREATE TABLE application_files (
+    id UUID PRIMARY KEY,
+    application_id INTEGER REFERENCES applications(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    size BIGINT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE offer_letters (
+    id UUID PRIMARY KEY,
+    application_id INTEGER REFERENCES applications(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

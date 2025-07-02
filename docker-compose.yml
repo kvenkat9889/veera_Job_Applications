@@ -1,51 +1,52 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:13
-    container_name: veera_postgres6
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: job_applications
-    volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5455:5432"
-
   backend:
+    container_name: veera_job_backend
     build: ./Backend
-    container_name: veera_backend6
-    restart: always
     ports:
-      - "3024:3024"
+      - "3644:3644"
     depends_on:
       - postgres
     volumes:
-      - ./Backend/uploads:/app/uploads
+      - ./Backend/uploads:/app/Uploads
     environment:
-      - PGHOST=postgres
       - PGUSER=postgres
       - PGPASSWORD=admin123
       - PGDATABASE=job_applications
+      - PGHOST=postgres
       - PGPORT=5432
 
   frontend:
+    container_name: veera_job_frontend
     build: ./Frontend
-    container_name: veera_frontend6
-    restart: always
     ports:
-      - "9045:80"
+      - "7607:80"
 
   hr:
+    container_name: veera_job_hr
     build: ./HR
-    container_name: veera_hr6
-    restart: always
     ports:
-      - "9046:80"
+      - "7608:80"
+
+  view_offer:
+    container_name: veera_job_view_offer
+    build: ./View_offer
+    ports:
+      - "7609:80"
+
+  postgres:
+    container_name: veera_job_postgres
+    image: postgres:13
+    ports:
+      - "6604:5432"
+    environment:
+      POSTGRES_DB: job_applications
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
-  db_data:
-
+  pgdata:
